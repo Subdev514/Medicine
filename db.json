@@ -1,0 +1,296 @@
+{
+  "users": {
+    "sarbagya": {
+      "username": "Sarbagya",
+      "passwordHash": "77f0f84be77e9e60c209ab15d37a9336f0cc9b62f6bee88d266f46d98f60ef1a",
+      "deviceId": "cb9413bd-b852-4878-8f6f-597ab543014d",
+      "boxes": [
+        {
+          "id": 1,
+          "name": "",
+          "pills": 0,
+          "schedules": [],
+          "history": []
+        },
+        {
+          "id": 2,
+          "name": "",
+          "pills": 0,
+          "schedules": [],
+          "history": []
+        },
+        {
+          "id": 3,
+          "name": "Paracetamol",
+          "pills": 7,
+          "schedules": [],
+          "history": [
+            {
+              "timestamp": "2026-07-28T03:45:26.266Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 9,
+              "pillsAfter": 8
+            },
+            {
+              "timestamp": "2026-07-28T03:59:27.365Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "web",
+              "pillsBefore": 8,
+              "pillsAfter": 7
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "",
+          "pills": 0,
+          "schedules": [],
+          "history": []
+        }
+      ],
+      "syncStatus": "Synced"
+    },
+    "rudrani": {
+      "username": "rudrani",
+      "passwordHash": "950ae3600ca3c83f96d26148ef57bddd9818255dcddea6fb6b686b4bbb07b3c2",
+      "deviceId": "89e9564c-a220-43a5-9b7a-e311bcc1c0ac",
+      "boxes": [
+        {
+          "id": 1,
+          "name": "",
+          "pills": 0,
+          "schedules": [],
+          "history": []
+        },
+        {
+          "id": 2,
+          "name": "",
+          "pills": 0,
+          "schedules": [],
+          "history": []
+        },
+        {
+          "id": 3,
+          "name": "Paracetamol",
+          "pills": 33,
+          "schedules": [],
+          "history": [
+            {
+              "timestamp": "2026-07-20T11:48:04.552Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "web",
+              "pillsBefore": 6,
+              "pillsAfter": 5
+            },
+            {
+              "timestamp": "2026-07-20T11:48:07.549Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "web",
+              "pillsBefore": 5,
+              "pillsAfter": 4
+            },
+            {
+              "timestamp": "2026-07-20T11:48:32.686Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 4,
+              "pillsAfter": 3
+            },
+            {
+              "timestamp": "2026-07-20T11:48:37.611Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 3,
+              "pillsAfter": 2
+            },
+            {
+              "timestamp": "2026-07-20T11:48:46.766Z",
+              "type": "refill",
+              "source": "web",
+              "pillsBefore": 2,
+              "pillsAfter": 10
+            },
+            {
+              "timestamp": "2026-07-20T11:48:49.915Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 10,
+              "pillsAfter": 9
+            },
+            {
+              "timestamp": "2026-07-20T11:48:51.878Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 9,
+              "pillsAfter": 8
+            },
+            {
+              "timestamp": "2026-07-20T11:48:52.097Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 8,
+              "pillsAfter": 7
+            },
+            {
+              "timestamp": "2026-07-20T11:50:22.161Z",
+              "type": "refill",
+              "source": "web",
+              "pillsBefore": 7,
+              "pillsAfter": 42
+            },
+            {
+              "timestamp": "2026-07-20T11:52:28.783Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 42,
+              "pillsAfter": 41
+            },
+            {
+              "timestamp": "2026-07-20T11:52:50.151Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 41,
+              "pillsAfter": 40
+            },
+            {
+              "timestamp": "2026-07-20T12:27:44.188Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 40,
+              "pillsAfter": 39
+            },
+            {
+              "timestamp": "2026-07-22T04:22:36.107Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 39,
+              "pillsAfter": 38
+            },
+            {
+              "timestamp": "2026-07-22T04:22:36.648Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 38,
+              "pillsAfter": 37
+            },
+            {
+              "timestamp": "2026-07-22T04:22:36.867Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 37,
+              "pillsAfter": 36
+            },
+            {
+              "timestamp": "2026-07-22T04:23:18.125Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 36,
+              "pillsAfter": 35
+            },
+            {
+              "timestamp": "2026-07-22T04:23:23.451Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 35,
+              "pillsAfter": 34
+            },
+            {
+              "timestamp": "2026-07-22T04:24:21.000Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 34,
+              "pillsAfter": 33
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "",
+          "pills": 0,
+          "schedules": [],
+          "history": []
+        }
+      ],
+      "fullName": "Rudrani Jha",
+      "room": "B-280",
+      "email": "rudrani@gmail.com",
+      "notes": "",
+      "syncStatus": "Synced"
+    },
+    "pallab": {
+      "username": "Pallab",
+      "passwordHash": "c7a3e50de5961ed6f19f154633e8af88cb76ebd309f157206ae9e576e88f13e1",
+      "deviceId": "7021dbcb-dc27-41c0-a7af-22aa54e7a45d",
+      "fullName": "Pallab Kumar Annay Sarkar",
+      "room": "unkown",
+      "email": "pallab@gmail.com",
+      "notes": "",
+      "registeredAt": "2026-07-20T12:13:04.972Z",
+      "boxes": [
+        {
+          "id": 1,
+          "name": "Asprin",
+          "pills": 1,
+          "schedules": [],
+          "history": []
+        },
+        {
+          "id": 2,
+          "name": "Vitamin C",
+          "pills": 6,
+          "schedules": [],
+          "history": []
+        },
+        {
+          "id": 3,
+          "name": "Paracetamol",
+          "pills": 40,
+          "schedules": [],
+          "history": [
+            {
+              "timestamp": "2026-07-22T04:23:10.643Z",
+              "type": "refill",
+              "source": "web",
+              "pillsBefore": 13,
+              "pillsAfter": 10
+            },
+            {
+              "timestamp": "2026-07-22T04:23:15.544Z",
+              "type": "refill",
+              "source": "web",
+              "pillsBefore": 10,
+              "pillsAfter": 40
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "",
+          "pills": 0,
+          "schedules": [],
+          "history": []
+        }
+      ],
+      "syncStatus": "awaiting_input"
+    }
+  }
+}

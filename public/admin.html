@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PillPulse | Admin Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <div class="admin-layout">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <span class="logo-icon">💊</span>
+        <div>
+          <div class="sidebar-title">PillPulse</div>
+          <div class="sidebar-sub">Admin Portal</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-link active" onclick="showSection('devices')">
+          <span>📋</span> Registered Devices
+        </a>
+        <a href="#" class="sidebar-link" onclick="showSection('register')">
+          <span>➕</span> Register New Device
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="admin-key-badge">
+          🔑 Admin Session Active
+        </div>
+        <div class="sidebar-hint">Key stored in session.<br>Navigate to <a href="/" style="color:#818cf8">/ Patient Login</a></div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+
+      <!-- Admin Key Gate (shown before key is entered) -->
+      <div id="admin-gate" class="admin-gate-overlay">
+        <div class="card admin-gate-card">
+          <div class="logo" style="justify-content:flex-start; margin-bottom:16px;">
+            <span class="logo-icon">🔐</span>
+            <h2>Admin Access</h2>
+          </div>
+          <p style="color:var(--text-secondary); margin-bottom:24px; font-size:0.9rem;">
+            Enter the admin key to access the device management portal.
+          </p>
+          <div class="input-group">
+            <label for="admin-key-input">Admin Key</label>
+            <input type="password" id="admin-key-input" placeholder="Enter admin key" autocomplete="off">
+          </div>
+          <button onclick="submitAdminKey()" class="btn btn-primary btn-block">Unlock Portal</button>
+        </div>
+      </div>
+
+      <!-- ===== SECTION: Registered Devices ===== -->
+      <section id="section-devices" class="admin-section">
+        <div class="admin-section-header">
+          <div>
+            <h2>Registered Devices & Patients</h2>
+            <p class="section-desc">All device-bound patient accounts. Click a row to edit details.</p>
+          </div>
+          <button onclick="loadDevices()" class="btn btn-outline btn-sm">↻ Refresh</button>
+        </div>
+
+        <div class="devices-table-wrapper card">
+          <table class="devices-table" id="devices-table">
+            <thead>
+              <tr>
+                <th>Patient Name</th>
+                <th>Username</th>
+                <th>Room / Ward</th>
+                <th>Email</th>
+                <th>Device ID</th>
+                <th>Registered</th>
+                <th>Pills Left</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="devices-tbody">
+              <tr><td colspan="8" class="table-empty">Loading devices...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== SECTION: Register New Device ===== -->
+      <section id="section-register" class="admin-section hidden">
+        <div class="admin-section-header">
+          <div>
+            <h2>Register New Device</h2>
+            <p class="section-desc">Bind a new IoT device to a patient account. The device ID is fixed and never changes.</p>
+          </div>
+        </div>
+
+        <div class="card admin-form-card">
+          <form id="register-form" onsubmit="submitRegister(event)">
+
+            <div class="form-section-title">🔐 Account Credentials</div>
+            <div class="admin-form-grid">
+              <div class="input-group">
+                <label for="reg-username">Username *</label>
+                <input type="text" id="reg-username" required placeholder="e.g. alice_smith">
+              </div>
+              <div class="input-group">
+                <label for="reg-password">Password *</label>
+                <input type="password" id="reg-password" required placeholder="Create a secure password">
+              </div>
+            </div>
+
+            <div class="form-section-title">📡 IoT Device Binding</div>
+            <div class="input-group">
+              <label for="reg-device-id">Device ID *</label>
+              <div class="device-id-row">
+                <input type="text" id="reg-device-id" required placeholder="e.g. cb9413bd-b852-4878-8f6f-597ab543014d">
+                <button type="button" onclick="fillCurrentDeviceId()" class="btn btn-outline btn-sm">Use This Browser's ID</button>
+                <button type="button" onclick="generateNewDeviceId()" class="btn btn-outline btn-sm">Generate New ID</button>
+              </div>
+              <div class="field-hint">This is the hardware device ID that will be permanently bound to this account.</div>
+            </div>
+
+            <div class="form-section-title">🧑‍⚕️ Patient Information</div>
+            <div class="admin-form-grid">
+              <div class="input-group">
+                <label for="reg-fullname">Full Name</label>
+                <input type="text" id="reg-fullname" placeholder="e.g. Alice Smith">
+              </div>
+              <div class="input-group">
+                <label for="reg-room">Room / Ward</label>
+                <input type="text" id="reg-room" placeholder="e.g. Room 201 / ICU Ward">
+              </div>
+              <div class="input-group">
+                <label for="reg-email">Contact Email</label>
+                <input type="email" id="reg-email" placeholder="e.g. alice@hospital.com">
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="reg-notes">Admin Notes</label>
+              <textarea id="reg-notes" rows="3" placeholder="e.g. Allergic to penicillin. Check-up every Monday."></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Register Device & Patient</button>
+              <button type="button" onclick="resetRegisterForm()" class="btn btn-outline">Clear Form</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ===== Edit Patient Modal ===== -->
+      <div id="edit-modal" class="modal-overlay hidden">
+        <div class="card modal-card admin-edit-modal">
+          <div class="modal-header">
+            <h3>Edit Patient Details</h3>
+            <button onclick="closeEditModal()" class="modal-close-btn">✕</button>
+          </div>
+          <form id="edit-form" onsubmit="submitEdit(event)">
+            <input type="hidden" id="edit-username">
+
+            <div class="form-section-title">🧑‍⚕️ Patient Information</div>
+            <div class="admin-form-grid">
+              <div class="input-group">
+                <label for="edit-fullname">Full Name</label>
+                <input type="text" id="edit-fullname" placeholder="Patient full name">
+              </div>
+              <div class="input-group">
+                <label for="edit-room">Room / Ward</label>
+                <input type="text" id="edit-room" placeholder="e.g. Room 201">
+              </div>
+              <div class="input-group">
+                <label for="edit-email">Contact Email</label>
+                <input type="email" id="edit-email" placeholder="e.g. patient@hospital.com">
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="edit-notes">Admin Notes</label>
+              <textarea id="edit-notes" rows="3" placeholder="Caregiver notes, allergies, instructions..."></textarea>
+            </div>
+
+            <div class="form-section-title">🔐 Security (optional)</div>
+            <div class="admin-form-grid">
+              <div class="input-group">
+                <label for="edit-password">New Password <span style="color:var(--text-muted)">(leave blank to keep)</span></label>
+                <input type="password" id="edit-password" placeholder="Enter new password to change">
+              </div>
+              <div class="input-group">
+                <label for="edit-device-id">Device ID <span style="color:var(--text-muted)">(leave blank to keep)</span></label>
+                <input type="text" id="edit-device-id" placeholder="Enter new device ID to re-bind">
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+              <button type="button" onclick="closeEditModal()" class="btn btn-outline">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

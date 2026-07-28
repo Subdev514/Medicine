@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PillPulse | Smart Medicine Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Toast Notification System -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <div class="app-container">
+    
+    <!-- AUTHENTICATION SCREEN -->
+    <div id="auth-screen" class="card auth-card">
+      <div class="auth-header">
+        <div class="logo">
+          <span class="logo-icon">💊</span>
+          <h1>PillPulse</h1>
+        </div>
+        <p class="subtitle">Smart Medicine Tracker — Patient Login</p>
+      </div>
+
+      <!-- Login Form only (Registration handled at /admin) -->
+      <form id="login-form" class="auth-form active" onsubmit="handleAuth(event, 'login')">
+        <div class="input-group">
+          <label for="login-username">Username</label>
+          <input type="text" id="login-username" required placeholder="Enter your username">
+        </div>
+        <div class="input-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required placeholder="Enter your password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+      </form>
+
+      <div class="device-status">
+        <div class="status-indicator"></div>
+        <span id="device-id-text">Initializing Device ID...</span>
+      </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="dashboard-screen" class="dashboard-container hidden">
+      <header class="dashboard-header">
+        <div class="header-left">
+          <div class="logo logo-sm">
+            <span class="logo-icon">💊</span>
+            <h2>PillPulse</h2>
+          </div>
+          <span class="welcome-text">Welcome back, <strong id="username-display">User</strong></span>
+        </div>
+        <div class="header-right">
+          <div class="status-badge-live connected" id="sync-status-badge" title="Device & Profile Sync Status">
+            <span class="pulse-indicator green" id="sync-pulse"></span>
+            <span id="sync-status-text">Sync: Synced</span>
+          </div>
+          <div class="status-badge-live disconnected" id="sse-status-badge" title="SSE Connection State">
+            <span class="pulse-indicator red" id="sse-pulse"></span>
+            <span id="sse-status-text">Server Stream: Offline</span>
+          </div>
+          <div class="status-badge-live disconnected" id="mqtt-status-badge" title="MQTT Broker State">
+            <span class="pulse-indicator red" id="mqtt-pulse"></span>
+            <span id="mqtt-status-text">MQTT Broker: Offline</span>
+          </div>
+          <div class="device-badge">
+            <span class="badge-icon">🔒</span>
+            <span id="badge-device-id">Device Verified</span>
+          </div>
+          <button onclick="handleLogout()" class="btn btn-outline btn-sm">Sign Out</button>
+        </div>
+      </header>
+
+      <!-- Patient Profile Card -->
+      <div class="patient-profile-card card" id="patient-profile-card">
+        <div class="profile-icon">🧑‍⚕️</div>
+        <div class="profile-details">
+          <div class="profile-name" id="profile-full-name">Patient</div>
+          <div class="profile-meta">
+            <span class="profile-tag" id="profile-room"></span>
+            <span class="profile-tag" id="profile-email"></span>
+          </div>
+          <div class="profile-notes" id="profile-notes"></div>
+        </div>
+        <div class="profile-device">
+          <span class="profile-device-label">Bound Device ID</span>
+          <span class="profile-device-id" id="profile-device-id">—</span>
+        </div>
+      </div>
+
+      <main class="dashboard-main">
+        <!-- Recording Notification Alert Banner -->
+        <div id="recording-alert-banner" class="recording-alert-banner hidden">
+          <div class="banner-icon">🎙️</div>
+          <div class="banner-content">
+            <h4>IoT Device Recording Completed!</h4>
+            <p>The IoT device sent a recording finished signal. Please input/update the medicine details for each box below to sync your profile and device.</p>
+          </div>
+          <button onclick="scrollToBoxes()" class="btn btn-primary btn-sm banner-btn">Input Box Details</button>
+        </div>
+
+        <div class="dashboard-title-bar">
+          <div>
+            <h3>Your Medicine Boxes</h3>
+            <p class="section-desc">Manage exactly 4 medicine slots. Configure multiple alarms and track intake dates.</p>
+          </div>
+        </div>
+
+        <!-- 4 Medicine Boxes Grid -->
+        <div class="boxes-grid">
+          
+          <!-- Box 1 -->
+          <div id="box-card-1" class="card box-card empty-slot">
+            <!-- Read Mode -->
+            <div id="box-view-1" class="box-view">
+              <div class="box-header">
+                <span class="box-number">Box 01</span>
+                <span class="status-badge empty" id="box-status-1">Empty</span>
+              </div>
+              <div class="box-body">
+                <h4 class="med-name" id="med-name-1">Empty Slot</h4>
+                <div class="med-info">
+                  <div class="schedules-section">
+                    <span class="info-label">Daily Schedules & Intake</span>
+                    <div class="schedules-container" id="schedules-container-1">
+                      <div class="no-schedules">Not configured</div>
+                    </div>
+                  </div>
+                  <div class="info-item pills-remaining-row">
+                    <span class="info-label">Pills Remaining</span>
+                    <div class="pills-counter-display">
+                      <span class="info-value count-value" id="med-pills-1">0</span>
+                      <button onclick="openRefillModal(1)" class="refill-icon-btn" title="Refill Box" id="refill-btn-1">🔄</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="box-footer">
+                <button onclick="takePill(1)" class="btn btn-action btn-primary" id="take-btn-1" disabled>No Pills</button>
+                <button onclick="toggleEdit(1, true)" class="btn btn-action btn-outline">Edit</button>
+              </div>
+            </div>
+            <!-- Edit Mode -->
+            <div id="box-edit-1" class="box-edit hidden">
+              <div class="box-header">
+                <span class="box-number">Editing Box 01</span>
+              </div>
+              <form onsubmit="saveBox(event, 1)">
+                <div class="input-group">
+                  <label for="edit-name-1">Medicine Name</label>
+                  <input type="text" id="edit-name-1" placeholder="e.g. Aspirin">
+                </div>
+                <div class="input-group">
+                  <label>Scheduled Alarms</label>
+                  <div class="edit-schedules-list" id="edit-schedules-list-1">
+                    <!-- Dynamic list of times with delete buttons -->
+                  </div>
+                  <div class="add-time-row">
+                    <input type="time" id="add-time-1">
+                    <button type="button" onclick="addScheduleTimeInput(1)" class="btn btn-outline btn-sm">Add Alarm</button>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <label>Pills Quantity</label>
+                  <div class="pill-counter">
+                    <button type="button" onclick="adjustPillInput(1, -1)" class="counter-btn">-</button>
+                    <input type="number" id="edit-pills-1" min="0" value="0">
+                    <button type="button" onclick="adjustPillInput(1, 1)" class="counter-btn">+</button>
+                  </div>
+                </div>
+                <div class="edit-actions">
+                  <button type="submit" class="btn btn-primary btn-sm">Save Config</button>
+                  <button type="button" onclick="toggleEdit(1, false)" class="btn btn-outline btn-sm">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Box 2 -->
+          <div id="box-card-2" class="card box-card empty-slot">
+            <!-- Read Mode -->
+            <div id="box-view-2" class="box-view">
+              <div class="box-header">
+                <span class="box-number">Box 02</span>
+                <span class="status-badge empty" id="box-status-2">Empty</span>
+              </div>
+              <div class="box-body">
+                <h4 class="med-name" id="med-name-2">Empty Slot</h4>
+                <div class="med-info">
+                  <div class="schedules-section">
+                    <span class="info-label">Daily Schedules & Intake</span>
+                    <div class="schedules-container" id="schedules-container-2">
+                      <div class="no-schedules">Not configured</div>
+                    </div>
+                  </div>
+                  <div class="info-item pills-remaining-row">
+                    <span class="info-label">Pills Remaining</span>
+                    <div class="pills-counter-display">
+                      <span class="info-value count-value" id="med-pills-2">0</span>
+                      <button onclick="openRefillModal(2)" class="refill-icon-btn" title="Refill Box" id="refill-btn-2">🔄</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="box-footer">
+                <button onclick="takePill(2)" class="btn btn-action btn-primary" id="take-btn-2" disabled>No Pills</button>
+                <button onclick="toggleEdit(2, true)" class="btn btn-action btn-outline">Edit</button>
+              </div>
+            </div>
+            <!-- Edit Mode -->
+            <div id="box-edit-2" class="box-edit hidden">
+              <div class="box-header">
+                <span class="box-number">Editing Box 02</span>
+              </div>
+              <form onsubmit="saveBox(event, 2)">
+                <div class="input-group">
+                  <label for="edit-name-2">Medicine Name</label>
+                  <input type="text" id="edit-name-2" placeholder="e.g. Vitamin C">
+                </div>
+                <div class="input-group">
+                  <label>Scheduled Alarms</label>
+                  <div class="edit-schedules-list" id="edit-schedules-list-2">
+                    <!-- Dynamic list of times with delete buttons -->
+                  </div>
+                  <div class="add-time-row">
+                    <input type="time" id="add-time-2">
+                    <button type="button" onclick="addScheduleTimeInput(2)" class="btn btn-outline btn-sm">Add Alarm</button>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <label>Pills Quantity</label>
+                  <div class="pill-counter">
+                    <button type="button" onclick="adjustPillInput(2, -1)" class="counter-btn">-</button>
+                    <input type="number" id="edit-pills-2" min="0" value="0">
+                    <button type="button" onclick="adjustPillInput(2, 1)" class="counter-btn">+</button>
+                  </div>
+                </div>
+                <div class="edit-actions">
+                  <button type="submit" class="btn btn-primary btn-sm">Save Config</button>
+                  <button type="button" onclick="toggleEdit(2, false)" class="btn btn-outline btn-sm">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Box 3 -->
+          <div id="box-card-3" class="card box-card empty-slot">
+            <!-- Read Mode -->
+            <div id="box-view-3" class="box-view">
+              <div class="box-header">
+                <span class="box-number">Box 03</span>
+                <span class="status-badge empty" id="box-status-3">Empty</span>
+              </div>
+              <div class="box-body">
+                <h4 class="med-name" id="med-name-3">Empty Slot</h4>
+                <div class="med-info">
+                  <div class="schedules-section">
+                    <span class="info-label">Daily Schedules & Intake</span>
+                    <div class="schedules-container" id="schedules-container-3">
+                      <div class="no-schedules">Not configured</div>
+                    </div>
+                  </div>
+                  <div class="info-item pills-remaining-row">
+                    <span class="info-label">Pills Remaining</span>
+                    <div class="pills-counter-display">
+                      <span class="info-value count-value" id="med-pills-3">0</span>
+                      <button onclick="openRefillModal(3)" class="refill-icon-btn" title="Refill Box" id="refill-btn-3">🔄</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="box-footer">
+                <button onclick="takePill(3)" class="btn btn-action btn-primary" id="take-btn-3" disabled>No Pills</button>
+                <button onclick="toggleEdit(3, true)" class="btn btn-action btn-outline">Edit</button>
+              </div>
+            </div>
+            <!-- Edit Mode -->
+            <div id="box-edit-3" class="box-edit hidden">
+              <div class="box-header">
+                <span class="box-number">Editing Box 03</span>
+              </div>
+              <form onsubmit="saveBox(event, 3)">
+                <div class="input-group">
+                  <label for="edit-name-3">Medicine Name</label>
+                  <input type="text" id="edit-name-3" placeholder="e.g. Paracetamol">
+                </div>
+                <div class="input-group">
+                  <label>Scheduled Alarms</label>
+                  <div class="edit-schedules-list" id="edit-schedules-list-3">
+                    <!-- Dynamic list of times with delete buttons -->
+                  </div>
+                  <div class="add-time-row">
+                    <input type="time" id="add-time-3">
+                    <button type="button" onclick="addScheduleTimeInput(3)" class="btn btn-outline btn-sm">Add Alarm</button>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <label>Pills Quantity</label>
+                  <div class="pill-counter">
+                    <button type="button" onclick="adjustPillInput(3, -1)" class="counter-btn">-</button>
+                    <input type="number" id="edit-pills-3" min="0" value="0">
+                    <button type="button" onclick="adjustPillInput(3, 1)" class="counter-btn">+</button>
+                  </div>
+                </div>
+                <div class="edit-actions">
+                  <button type="submit" class="btn btn-primary btn-sm">Save Config</button>
+                  <button type="button" onclick="toggleEdit(3, false)" class="btn btn-outline btn-sm">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Box 4 -->
+          <div id="box-card-4" class="card box-card empty-slot">
+            <!-- Read Mode -->
+            <div id="box-view-4" class="box-view">
+              <div class="box-header">
+                <span class="box-number">Box 04</span>
+                <span class="status-badge empty" id="box-status-4">Empty</span>
+              </div>
+              <div class="box-body">
+                <h4 class="med-name" id="med-name-4">Empty Slot</h4>
+                <div class="med-info">
+                  <div class="schedules-section">
+                    <span class="info-label">Daily Schedules & Intake</span>
+                    <div class="schedules-container" id="schedules-container-4">
+                      <div class="no-schedules">Not configured</div>
+                    </div>
+                  </div>
+                  <div class="info-item pills-remaining-row">
+                    <span class="info-label">Pills Remaining</span>
+                    <div class="pills-counter-display">
+                      <span class="info-value count-value" id="med-pills-4">0</span>
+                      <button onclick="openRefillModal(4)" class="refill-icon-btn" title="Refill Box" id="refill-btn-4">🔄</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="box-footer">
+                <button onclick="takePill(4)" class="btn btn-action btn-primary" id="take-btn-4" disabled>No Pills</button>
+                <button onclick="toggleEdit(4, true)" class="btn btn-action btn-outline">Edit</button>
+              </div>
+            </div>
+            <!-- Edit Mode -->
+            <div id="box-edit-4" class="box-edit hidden">
+              <div class="box-header">
+                <span class="box-number">Editing Box 04</span>
+              </div>
+              <form onsubmit="saveBox(event, 4)">
+                <div class="input-group">
+                  <label for="edit-name-4">Medicine Name</label>
+                  <input type="text" id="edit-name-4" placeholder="e.g. Ibuprofen">
+                </div>
+                <div class="input-group">
+                  <label>Scheduled Alarms</label>
+                  <div class="edit-schedules-list" id="edit-schedules-list-4">
+                    <!-- Dynamic list of times with delete buttons -->
+                  </div>
+                  <div class="add-time-row">
+                    <input type="time" id="add-time-4">
+                    <button type="button" onclick="addScheduleTimeInput(4)" class="btn btn-outline btn-sm">Add Alarm</button>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <label>Pills Quantity</label>
+                  <div class="pill-counter">
+                    <button type="button" onclick="adjustPillInput(4, -1)" class="counter-btn">-</button>
+                    <input type="number" id="edit-pills-4" min="0" value="0">
+                    <button type="button" onclick="adjustPillInput(4, 1)" class="counter-btn">+</button>
+                  </div>
+                </div>
+                <div class="edit-actions">
+                  <button type="submit" class="btn btn-primary btn-sm">Save Config</button>
+                  <button type="button" onclick="toggleEdit(4, false)" class="btn btn-outline btn-sm">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- History Log and IoT Simulation Row -->
+        <div class="dashboard-details-row">
+          
+          <!-- Activity Timeline -->
+          <div class="card details-card history-card">
+            <div class="details-card-header">
+              <h3>📜 Activity Timeline</h3>
+            </div>
+            <div class="timeline" id="history-timeline">
+              <div class="timeline-empty">No activity logs recorded yet.</div>
+            </div>
+          </div>
+
+          <!-- IoT Hardware Simulator Panel -->
+          <div class="card details-card simulator-card">
+            <div class="details-card-header">
+              <h3>🤖 IoT Hardware Simulator (MQTT)</h3>
+            </div>
+            <p class="sim-desc">
+              Simulate button presses from the physical IoT device. The web server listens to MQTT messages and synchronizes the frontend in real-time.
+            </p>
+            <div class="simulator-buttons-grid">
+              <button onclick="simulateMqttTake(1)" class="btn btn-outline btn-sim" id="sim-btn-1">
+                <span class="sim-btn-title">🔘 Box 1 Pressed</span>
+                <span class="sim-topic">Topic: .../1/take</span>
+              </button>
+              <button onclick="simulateMqttTake(2)" class="btn btn-outline btn-sim" id="sim-btn-2">
+                <span class="sim-btn-title">🔘 Box 2 Pressed</span>
+                <span class="sim-topic">Topic: .../2/take</span>
+              </button>
+              <button onclick="simulateMqttTake(3)" class="btn btn-outline btn-sim" id="sim-btn-3">
+                <span class="sim-btn-title">🔘 Box 3 Pressed</span>
+                <span class="sim-topic">Topic: .../3/take</span>
+              </button>
+              <button onclick="simulateMqttTake(4)" class="btn btn-outline btn-sim" id="sim-btn-4">
+                <span class="sim-btn-title">🔘 Box 4 Pressed</span>
+                <span class="sim-topic">Topic: .../4/take</span>
+              </button>
+            </div>
+            <div class="simulator-record-row" style="margin-top: 12px;">
+              <button onclick="simulateMqttRecord()" class="btn btn-warning btn-sim-record btn-block">
+                <span class="sim-btn-title">🎙️ Simulate IoT Recording Done</span>
+                <span class="sim-topic">Topic: pillpulse/devices/{deviceId}/recording_done</span>
+              </button>
+            </div>
+            <div class="simulator-console">
+              <div class="console-header">MQTT Console Logger</div>
+              <div class="console-body" id="sim-console-output">
+                [SYSTEM] Connected to SSE event stream. Waiting for events...
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+
+    <!-- Refill Overlay Modal -->
+    <div id="refill-modal" class="modal-overlay hidden">
+      <div class="card modal-card">
+        <h3>Refill Medicine</h3>
+        <p id="refill-modal-title">Refilling Box 1</p>
+        <div class="input-group">
+          <label for="refill-qty-input">Total Pills Quantity</label>
+          <div class="pill-counter">
+            <button type="button" onclick="adjustRefillInput(-5)" class="counter-btn">-5</button>
+            <button type="button" onclick="adjustRefillInput(-1)" class="counter-btn">-1</button>
+            <input type="number" id="refill-qty-input" min="0" value="30">
+            <button type="button" onclick="adjustRefillInput(1)" class="counter-btn">+1</button>
+            <button type="button" onclick="adjustRefillInput(5)" class="counter-btn">+5</button>
+          </div>
+        </div>
+        <div class="edit-actions">
+          <button onclick="submitRefill()" class="btn btn-primary btn-sm">Confirm Refill</button>
+          <button onclick="closeRefillModal()" class="btn btn-outline btn-sm">Cancel</button>
+        </div>
+      </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
