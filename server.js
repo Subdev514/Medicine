@@ -420,6 +420,26 @@ app.post('/api/medicine/take', authenticateToken, async (req, res) => {
     const pillsBefore = box.pills;
     box.pills -= 1;
 
+    // Check if taken ahead of time
+    let removedAlarm = null;
+    if (box.schedules && box.schedules.length > 0) {
+      const sortedSchedules = [...box.schedules].sort((a, b) => a.time.localeCompare(b.time));
+      const earliestSchedule = sortedSchedules[0];
+
+      let curTime = req.body.localTime;
+      if (!curTime) {
+        const now = new Date();
+        const curHour = String(now.getHours()).padStart(2, '0');
+        const curMin = String(now.getMinutes()).padStart(2, '0');
+        curTime = `${curHour}:${curMin}`;
+      }
+
+      if (curTime < earliestSchedule.time) {
+        removedAlarm = earliestSchedule.time;
+        box.schedules = box.schedules.filter(s => s.time !== earliestSchedule.time);
+      }
+    }
+
     // Mark schedule as taken if client passed it
     if (time && box.schedules) {
       const schedule = box.schedules.find(s => s.time === time);
@@ -434,7 +454,8 @@ app.post('/api/medicine/take', authenticateToken, async (req, res) => {
       scheduleTime: time || null,
       source: 'web',
       pillsBefore,
-      pillsAfter: box.pills
+      pillsAfter: box.pills,
+      removedAlarm: removedAlarm
     });
 
     await writeDB(db);
@@ -443,15 +464,19 @@ app.post('/api/medicine/take', authenticateToken, async (req, res) => {
     publishDeviceUpdate(user.deviceId, user.boxes);
 
     // Broadcast SSE
+    const message = removedAlarm
+      ? `Took 1 pill of ${box.name || `Box ${boxId}`} ahead of time. Earliest alarm (${removedAlarm}) removed.`
+      : `Took 1 pill of ${box.name || `Box ${boxId}`} (Web UI)`;
+
     broadcastSSE({
       type: 'medicine_updated',
       username: req.user.username,
       deviceId: user.deviceId,
       boxes: user.boxes,
-      message: `Took 1 pill of ${box.name || `Box ${boxId}`} (Web UI)`
+      message: message
     });
 
-    res.json({ message: 'Pill taken successfully', boxes: user.boxes });
+    res.json({ message: message, boxes: user.boxes });
   } catch (error) {
     console.error('Take pill error:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -695,19 +720,31 @@ async function handleDeviceTakePill(deviceId, boxId) {
     const pillsBefore = box.pills;
     box.pills -= 1;
 
-    // Find the next/closest scheduled time to mark as taken today
+    // Check if taken ahead of time
+    let removedAlarm = null;
+    let matchedTime = null;
     const now = new Date();
     const todayStr = now.toLocaleDateString('en-CA'); // YYYY-MM-DD
-    let matchedTime = null;
 
     if (box.schedules && box.schedules.length > 0) {
-      // Find untaken schedules today
       const sortedSchedules = [...box.schedules].sort((a, b) => a.time.localeCompare(b.time));
-      const untaken = sortedSchedules.filter(s => s.lastTakenDate !== todayStr);
-      if (untaken.length > 0) {
-        const schedule = untaken[0];
-        schedule.lastTakenDate = todayStr;
-        matchedTime = schedule.time;
+      const earliestSchedule = sortedSchedules[0];
+
+      const curHour = String(now.getHours()).padStart(2, '0');
+      const curMin = String(now.getMinutes()).padStart(2, '0');
+      const curTime = `${curHour}:${curMin}`;
+
+      if (curTime < earliestSchedule.time) {
+        removedAlarm = earliestSchedule.time;
+        box.schedules = box.schedules.filter(s => s.time !== earliestSchedule.time);
+      } else {
+        // Find untaken schedules today
+        const untaken = sortedSchedules.filter(s => s.lastTakenDate !== todayStr);
+        if (untaken.length > 0) {
+          const schedule = untaken[0];
+          schedule.lastTakenDate = todayStr;
+          matchedTime = schedule.time;
+        }
       }
     }
 
@@ -717,7 +754,8 @@ async function handleDeviceTakePill(deviceId, boxId) {
       scheduleTime: matchedTime,
       source: 'device',
       pillsBefore,
-      pillsAfter: box.pills
+      pillsAfter: box.pills,
+      removedAlarm: removedAlarm
     });
 
     await writeDB(db);
@@ -726,12 +764,16 @@ async function handleDeviceTakePill(deviceId, boxId) {
     publishDeviceUpdate(deviceId, targetUser.boxes);
 
     // Push notification to frontend clients
+    const message = removedAlarm
+      ? `Device consumed 1 pill of ${box.name || `Box ${boxId}`} ahead of time. Earliest alarm (${removedAlarm}) removed.`
+      : `Device consumed 1 pill of ${box.name || `Box ${boxId}`} (MQTT)`;
+
     broadcastSSE({
       type: 'medicine_updated',
       username: targetUsername,
       deviceId: deviceId,
       boxes: targetUser.boxes,
-      message: `Device consumed 1 pill of ${box.name || `Box ${boxId}`} (MQTT)`
+      message: message
     });
   } catch (err) {
     console.error('Error processing device pill take:', err);

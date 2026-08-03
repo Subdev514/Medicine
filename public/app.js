@@ -475,7 +475,10 @@ function renderHistory() {
 
     if (log.type === 'taken') {
       badgeType = 'taken';
-      const detail = log.scheduleTime ? `for ${formatTime(log.scheduleTime)} schedule` : 'ad-hoc';
+      let detail = log.scheduleTime ? `for ${formatTime(log.scheduleTime)} schedule` : 'ad-hoc';
+      if (log.removedAlarm) {
+        detail += ` (Alarm at ${formatTime(log.removedAlarm)} removed ahead of time)`;
+      }
       const source = log.source === 'device' ? '🔌 IoT Device' : '💻 Web App';
       content = `Took 1 pill of <strong>${log.medName}</strong> (${detail}) via ${source}. Remaining: ${log.pillsAfter}`;
     } else if (log.type === 'refill') {
@@ -617,6 +620,11 @@ async function takePill(boxId) {
     return;
   }
 
+  const now = new Date();
+  const curHour = String(now.getHours()).padStart(2, '0');
+  const curMin = String(now.getMinutes()).padStart(2, '0');
+  const localTime = `${curHour}:${curMin}`;
+
   try {
     const response = await fetch('/api/medicine/take', {
       method: 'POST',
@@ -625,7 +633,7 @@ async function takePill(boxId) {
         'Authorization': `Bearer ${authToken}`,
         'x-device-id': deviceId
       },
-      body: JSON.stringify({ boxId })
+      body: JSON.stringify({ boxId, localTime })
     });
 
     const data = await response.json();
@@ -633,7 +641,7 @@ async function takePill(boxId) {
       medicineBoxes = data.boxes;
       renderBoxes();
       renderHistory();
-      showToast(`Took 1 pill of ${box.name}. remaining: ${box.pills - 1}`, 'success');
+      showToast(data.message || `Took 1 pill of ${box.name}.`, 'success');
     } else {
       showToast(data.message || 'Failed to record intake', 'error');
     }

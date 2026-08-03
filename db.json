@@ -22,7 +22,7 @@
         {
           "id": 3,
           "name": "Paracetamol",
-          "pills": 7,
+          "pills": 3,
           "schedules": [],
           "history": [
             {
@@ -40,6 +40,38 @@
               "source": "web",
               "pillsBefore": 8,
               "pillsAfter": 7
+            },
+            {
+              "timestamp": "2026-07-28T10:41:34.568Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "web",
+              "pillsBefore": 7,
+              "pillsAfter": 6
+            },
+            {
+              "timestamp": "2026-07-28T10:41:36.514Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "web",
+              "pillsBefore": 6,
+              "pillsAfter": 5
+            },
+            {
+              "timestamp": "2026-07-28T10:41:39.480Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 5,
+              "pillsAfter": 4
+            },
+            {
+              "timestamp": "2026-07-28T10:41:46.379Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 4,
+              "pillsAfter": 3
             }
           ]
         },
@@ -291,6 +323,66 @@
         }
       ],
       "syncStatus": "awaiting_input"
+    },
+    "testuser_verify_1785751778604": {
+      "username": "testuser_verify_1785751778604",
+      "passwordHash": "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f",
+      "deviceId": "test-device-1785751778604",
+      "fullName": "Verification Patient",
+      "room": "Ward A",
+      "email": "test@verify.com",
+      "notes": "",
+      "syncStatus": "Synced",
+      "registeredAt": "2026-08-03T10:09:38.701Z",
+      "boxes": [
+        {
+          "id": 1,
+          "name": "Aspirin",
+          "pills": 9,
+          "schedules": [],
+          "history": [
+            {
+              "timestamp": "2026-08-03T10:09:38.744Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "web",
+              "pillsBefore": 10,
+              "pillsAfter": 9,
+              "removedAlarm": "23:00"
+            },
+            {
+              "timestamp": "2026-08-03T10:09:38.763Z",
+              "type": "taken",
+              "scheduleTime": null,
+              "source": "device",
+              "pillsBefore": 10,
+              "pillsAfter": 9,
+              "removedAlarm": "17:00"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "",
+          "pills": 0,
+          "schedules": [],
+          "history": []
+        },
+        {
+          "id": 3,
+          "name": "",
+          "pills": 0,
+          "schedules": [],
+          "history": []
+        },
+        {
+          "id": 4,
+          "name": "",
+          "pills": 0,
+          "schedules": [],
+          "history": []
+        }
+      ]
     }
   }
 }
