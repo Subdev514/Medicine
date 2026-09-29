@@ -588,13 +588,14 @@ app.post('/api/simulate/mqtt-record', async (req, res) => {
 
 // 7.a Formal HTTP Endpoints for ESP32 Integration (Approach 1)
 app.post('/api/devices/record-done', async (req, res) => {
-  const { deviceId } = req.body;
+  const { deviceId, slot } = req.body;
   if (!deviceId) {
     return res.status(400).json({ message: 'deviceId is required' });
   }
 
-  console.log(`[Device API] Received record-done from device ${deviceId}`);
-  await handleDeviceRecordDone(deviceId);
+  const slotNum = parseInt(slot) || null; // which compartment was refilled (optional)
+  console.log(`[Device API] Received record-done from device ${deviceId}${slotNum ? ` (compartment ${slotNum})` : ''}`);
+  await handleDeviceRecordDone(deviceId, slotNum);
   res.json({ message: 'Status updated to awaiting_input. Awaiting web configuration.' });
 });
 
@@ -618,16 +619,23 @@ app.get('/api/devices/status', async (req, res) => {
       return res.status(404).json({ message: 'Device not registered' });
     }
 
-    const box1 = targetUser.boxes.find(b => b.id === 1) || { id: 1, name: '', pills: 0, schedules: [] };
+    // Return every compartment so the device can sync all 4 at once,
+    // not just box 1. Unconfigured boxes are still sent (configured: false)
+    // so the device knows to ignore that slot.
+    const boxes = [1, 2, 3, 4].map(id => {
+      const b = targetUser.boxes.find(x => x.id === id) || { id, name: '', pills: 0, schedules: [] };
+      return {
+        id: b.id,
+        name: b.name || '',
+        pills: b.pills || 0,
+        configured: !!(b.name && b.name.trim()),
+        schedules: (b.schedules || []).map(s => s.time || s)
+      };
+    });
 
     res.json({
       status: targetUser.syncStatus || 'Synced',
-      box: {
-        id: box1.id,
-        name: box1.name,
-        pills: box1.pills,
-        schedules: box1.schedules.map(s => s.time || s)
-      }
+      boxes
     });
   } catch (err) {
     console.error('Error in /api/devices/status:', err);
@@ -780,7 +788,7 @@ async function handleDeviceTakePill(deviceId, boxId) {
   }
 }
 
-async function handleDeviceRecordDone(deviceId) {
+async function handleDeviceRecordDone(deviceId, slot = null) {
   try {
     const db = await readDB();
     let targetUser = null;
@@ -812,8 +820,11 @@ async function handleDeviceRecordDone(deviceId) {
       type: 'recording_done',
       username: targetUsername,
       deviceId: deviceId,
+      slot: slot,
       syncStatus: 'awaiting_input',
-      message: 'Recording completed on IoT device! Please fill in box details.'
+      message: slot
+        ? `Compartment ${slot} was filled on the device. Please update box details, then save to sync all compartments.`
+        : 'Recording completed on IoT device! Please fill in box details.'
     });
   } catch (err) {
     console.error('Error processing device recording done:', err);

@@ -182,7 +182,9 @@ function connectSSE() {
       } else if (data.type === 'recording_done') {
         if (data.username.toLowerCase() === currentUser.toLowerCase()) {
           updateSyncStatusUI('awaiting_input');
-          showToast('🎙️ Recording finished on IoT device! Please input box details.', 'warning');
+          showToast(data.slot
+            ? `🎙️ Compartment ${data.slot} filled on device! Update box details and save to sync.`
+            : '🎙️ Recording finished on IoT device! Please input box details.', 'warning');
           logToSimulatorConsole(`[MQTT] Event recording_done received for device ${data.deviceId}. Awaiting box input.`);
         }
       } else if (data.type === 'medicine_updated') {
